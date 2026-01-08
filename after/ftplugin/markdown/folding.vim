@@ -1,26 +1,27 @@
 " Fold expressions {{{1
 function! StackedMarkdownFolds()
-  let thisline = getline(v:lnum)
-  let prevline = getline(v:lnum - 1)
-  let nextline = getline(v:lnum + 1)
-  " Indented code blocks start and end a line too early 
-  " So skip empty leading and trailing lines
-  let previscode = InSyntaxCodeBlock(v:lnum - 1) && prevline != ""
-  let thisiscode = InSyntaxCodeBlock(v:lnum) && thisline != ""
-  let nextiscode = InSyntaxCodeBlock(v:lnum + 1) && nextline != ""
+  if g:markdown_fold_code
+    let previscode = InSyntaxCodeBlock(v:lnum - 1)
+    let thisiscode = InSyntaxCodeBlock(v:lnum)
+    let nextiscode = InSyntaxCodeBlock(v:lnum + 1)
 
-  if !previscode && thisiscode
-    return ">2"
-  elseif thisiscode && !nextiscode
-    return "<2"
-  elseif previscode && thisiscode
-    return "="
-  endif
+    if !previscode && thisiscode
+      return ">2"
+    elseif thisiscode && !nextiscode
+      return "<2"
+    elseif previscode && thisiscode
+      return "="
+    endif
 
-  if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
-    return ">2"
-  elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
-    return "<2"
+    let thisline = getline(v:lnum)
+    let prevline = getline(v:lnum - 1)
+    let nextline = getline(v:lnum + 1)
+
+    if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
+      return ">2"
+    elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
+      return "<2"
+    endif
   endif
   
   if HeadingDepth(v:lnum) > 0
@@ -31,25 +32,28 @@ function! StackedMarkdownFolds()
 endfunction
 
 function! NestedMarkdownFolds()
-  let thisline = getline(v:lnum)
-  let prevline = getline(v:lnum - 1)
-  let nextline = getline(v:lnum + 1)
-  let previscode = InSyntaxCodeBlock(v:lnum - 1) && prevline != ""
-  let thisiscode = InSyntaxCodeBlock(v:lnum) && thisline != ""
-  let nextiscode = InSyntaxCodeBlock(v:lnum + 1) && nextline != ""
+  if g:markdown_fold_code
+    let previscode = InSyntaxCodeBlock(v:lnum - 1)
+    let thisiscode = InSyntaxCodeBlock(v:lnum)
+    let nextiscode = InSyntaxCodeBlock(v:lnum + 1)
 
-  if !previscode && thisiscode
-    return "a1"
-  elseif thisiscode && !nextiscode
-    return "s1"
-  elseif previscode && thisiscode
-    return "="
-  endif
+    if !previscode && thisiscode
+      return "a1"
+    elseif thisiscode && !nextiscode
+      return "s1"
+    elseif previscode && thisiscode
+      return "="
+    endif
 
-  if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
-    return "a1"
-  elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
-    return "s1"
+    let thisline = getline(v:lnum)
+    let prevline = getline(v:lnum - 1)
+    let nextline = getline(v:lnum + 1)
+
+    if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
+      return "a1"
+    elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
+      return "s1"
+    endif
   endif
 
   let depth = HeadingDepth(v:lnum)
@@ -95,12 +99,12 @@ function! InSyntaxCodeBlock(lnum)
     " It's cheap to check if the current line has 'markdownCode' syntax group
     return HasSyntaxGroup(a:lnum, '\vmarkdown(Code|Highlight)')
   endif
-  return false
+  return 0
 endfunction
 
 function! LineIsFenced(lnum)
   if InSyntaxCodeBlock(lnum)
-      return true
+      return 1
   else
     " Using searchpairpos() is expensive, so only do it if syntax highlighting
     " is not enabled
@@ -185,6 +189,10 @@ if !exists('g:markdown_fold_override_foldtext')
   let g:markdown_fold_override_foldtext = 1
 endif
 
+if !exists('g:markdown_fold_code')
+  let g:markdown_fold_code = 1
+endif
+
 setlocal foldmethod=expr
 
 if g:markdown_fold_override_foldtext
@@ -202,4 +210,4 @@ let b:undo_ftplugin .= '
   \ | setlocal foldmethod< foldtext< foldexpr<
   \ | delcommand FoldToggle
   \ '
-" vim:set fdm=marker:
+" vim:set fdm=marker ts=2 sts=2 sw=2:
