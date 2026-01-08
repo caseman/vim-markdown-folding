@@ -120,8 +120,12 @@ function! s:FoldText()
   let line = getline(v:foldstart)
 
   if v:foldend > v:foldstart && InSyntaxCodeBlock(v:foldstart + 1)
-    let topcodeline = getline(v:foldstart + 1)
-    return '``` '.topcodeline.'  '.linecount
+    if match("^```", line) != -1
+      let topcodeline = getline(v:foldstart + 1)
+    else
+      let topcodeline = getline(v:foldstart)
+    endif
+    return '``` '.trim(topcodeline).'  '.linecount
   endif
 
   let indent = repeat('#', level)
