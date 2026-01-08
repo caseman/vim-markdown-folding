@@ -13,6 +13,8 @@ function! StackedMarkdownFolds()
     return ">2"
   elseif thisiscode && !nextiscode
     return "<2"
+  elseif previscode && thisiscode
+    return "="
   endif
 
   if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
@@ -32,6 +34,18 @@ function! NestedMarkdownFolds()
   let thisline = getline(v:lnum)
   let prevline = getline(v:lnum - 1)
   let nextline = getline(v:lnum + 1)
+  let previscode = InSyntaxCodeBlock(v:lnum - 1) && prevline != ""
+  let thisiscode = InSyntaxCodeBlock(v:lnum) && thisline != ""
+  let nextiscode = InSyntaxCodeBlock(v:lnum + 1) && nextline != ""
+
+  if !previscode && thisiscode
+    return "a1"
+  elseif thisiscode && !nextiscode
+    return "s1"
+  elseif previscode && thisiscode
+    return "="
+  endif
+
   if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
     return "a1"
   elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
