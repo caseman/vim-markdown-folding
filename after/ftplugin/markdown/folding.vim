@@ -123,7 +123,7 @@ function! s:FoldText()
     if match("^```", line) != -1
       let topcodeline = getline(v:foldstart + 1)
     else
-      let topcodeline = getline(v:foldstart)
+      let topcodeline = line
     endif
     return '``` '.trim(topcodeline).'  '.linecount
   endif
