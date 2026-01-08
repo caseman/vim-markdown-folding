@@ -3,6 +3,18 @@ function! StackedMarkdownFolds()
   let thisline = getline(v:lnum)
   let prevline = getline(v:lnum - 1)
   let nextline = getline(v:lnum + 1)
+  " Indented code blocks start and end a line too early 
+  " So skip empty leading and trailing lines
+  let previscode = InSyntaxCodeBlock(v:lnum - 1) && prevline != ""
+  let thisiscode = InSyntaxCodeBlock(v:lnum) && thisline != ""
+  let nextiscode = InSyntaxCodeBlock(v:lnum + 1) && nextline != ""
+
+  if !previscode && thisiscode
+    return ">2"
+  elseif thisiscode && !nextiscode
+    return "<2"
+  endif
+
   if thisline =~ '^```.*$' && prevline =~ '^\s*$'  " start of a fenced block
     return ">2"
   elseif thisline =~ '^```$' && nextline =~ '^\s*$'  " end of a fenced block
@@ -64,10 +76,17 @@ function! HeadingDepth(lnum)
   return level
 endfunction
 
-function! LineIsFenced(lnum)
+function! InSyntaxCodeBlock(lnum)
   if exists("b:current_syntax") && b:current_syntax ==# 'markdown'
     " It's cheap to check if the current line has 'markdownCode' syntax group
     return HasSyntaxGroup(a:lnum, '\vmarkdown(Code|Highlight)')
+  endif
+  return false
+endfunction
+
+function! LineIsFenced(lnum)
+  if InSyntaxCodeBlock(lnum)
+      return true
   else
     " Using searchpairpos() is expensive, so only do it if syntax highlighting
     " is not enabled
@@ -96,10 +115,17 @@ endfunction
 
 function! s:FoldText()
   let level = HeadingDepth(v:foldstart)
-  let indent = repeat('#', level)
-  let title = substitute(getline(v:foldstart), '^#\+\s\+', '', '')
   let foldsize = (v:foldend - v:foldstart)
   let linecount = '['.foldsize.' line'.(foldsize>1?'s':'').']'
+  let line = getline(v:foldstart)
+
+  if v:foldend > v:foldstart && InSyntaxCodeBlock(v:foldstart + 1)
+    let topcodeline = getline(v:foldstart + 1)
+    return '     '.topcodeline.'  '.linecount
+  endif
+
+  let indent = repeat('#', level)
+  let title = substitute(line, '^#\+\s\+', '', '')
 
   if level < 6
     let spaces_1 = repeat(' ', 6 - level)
