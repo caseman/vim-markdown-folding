@@ -121,7 +121,7 @@ function! s:FoldText()
 
   if v:foldend > v:foldstart && InSyntaxCodeBlock(v:foldstart + 1)
     let topcodeline = getline(v:foldstart + 1)
-    return '     '.topcodeline.'  '.linecount
+    return '``` '.topcodeline.'  '.linecount
   endif
 
   let indent = repeat('#', level)
