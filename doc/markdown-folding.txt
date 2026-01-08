@@ -82,8 +82,7 @@ If set to 0, the fold text will not be overriden:>
 <
 
                                                         *g:markdown_fold_code*
-If set to 0, code in indented and fenced and fenced code blocks will not
-be folded:>
+If set to 0, code in indented and fenced code blocks will not be folded:>
     let g:markdown_fold_code = 0
 <
 
