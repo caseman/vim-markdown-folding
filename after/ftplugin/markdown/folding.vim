@@ -138,7 +138,7 @@ function! s:FoldText()
   let line = getline(v:foldstart)
 
   if v:foldend > v:foldstart && InSyntaxCodeBlock(v:foldstart + 1)
-    if match("^```", line) != -1
+    if match(line, "^```") != -1
       let topcodeline = getline(v:foldstart + 1)
     else
       let topcodeline = line
